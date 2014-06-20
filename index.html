@@ -1,104 +1,100 @@
 <!DOCTYPE html>
 <head>
-  <title>ServerLogStats.com</title>
-  <meta name="description" content="Visualize web server logs">
-  <link href="css/main.css" rel="stylesheet" type="text/css">
-  <meta charset="UTF-8">
+	<title>WeBuild Live Stats</title>
+	<meta name="description" content="Visualize web server logs">
+	<link href="css/main.css" rel="stylesheet" type="text/css">
+	<meta charset="UTF-8">
 </head>
 <body>
 
-<a style="position: absolute; top: 0; right: 0; border: 0;" href="https://github.com/danielstjules/ServerLogStats">
-  <img src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
-</a>
+	<a style="position: absolute; top: 0; right: 0; border: 0;" href="https://github.com/danielstjules/ServerLogStats">
+		<img src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
+	</a>
 
-<div class="header">
-  <h1>Server LogStats</h1>
-</div>
+	<div class="header">
+		<h1>WeBuild Live LogStats</h1>
+	</div>
 
-<div id="content">
+	<div id="content">
 
-  <script id="uploaded-template" type="text/x-handlebars-template">
-    {{#if browserIncompatible}}
-      <strong>Error:</strong> The File APIs necessary for this app are not
-      supported by your browser.
-    {{else}}
-     <strong>Analyzing: </strong> {{fileName}} - {{fileSize}} bytes
-    {{/if}}
-    {{#if fileError}}
-      <br /><br />
-      <strong>Error:</strong> File input not a valid log. This page will refresh
-      automatically in 4 seconds
-    {{/if}}
-  </script>
+		<script id="uploaded-template" type="text/x-handlebars-template">
+			<br /><br />
+			<strong>Wait..</strong> This file is being loaded.
+		</script>
 
-  <script id="section-template" type="text/x-handlebars-template">
-    <div id="{{id}}" class="section">
-      <div class="container">
-        <strong>Top 100 {{sectionName}}</strong>
-        <div class="table">
-          {{> table}}
-        </div>
-      </div>
-      <strong>Top 10 {{sectionName}}</strong>
-    </div>
-  </script>
+		<script id="section-template" type="text/x-handlebars-template">
+			<div id="{{id}}" class="section">
+				<div class="container">
+					<strong>Top 100 {{sectionName}}</strong>
+					<div class="table">
+						{{> table}}
+					</div>
+				</div>
+				<strong>Top 10 {{sectionName}}</strong>
+			</div>
+		</script>
 
-  <script id="modal-template" type="text/x-handlebars-template">
-    <div id="overlay">
-      <div id="modal">
-        <p class="right"><a id="close">Click to Close</a></p>
-        <p><strong>{{title}}</strong>: {{query}}</p>
-        {{#if extraTitle}}
-          <p><strong>{{extraTitle}}</strong>: {{extraInfo}}</p>
-        {{/if}}
-        <div class="cl"></div>
-        <div class="table right">
-          {{> table}}
-        </div>
-      </div>
-    </div>
-  </script>
+		<script id="modal-template" type="text/x-handlebars-template">
+			<div id="overlay">
+				<div id="modal">
+					<p class="right"><a id="close">Click to Close</a></p>
+					<p><strong>{{title}}</strong>: {{query}}</p>
+					{{#if extraTitle}}
+					<p><strong>{{extraTitle}}</strong>: {{extraInfo}}</p>
+					{{/if}}
+					<div class="cl"></div>
+					<div class="table right">
+						{{> table}}
+					</div>
+				</div>
+			</div>
+		</script>
 
-  <script id="table-partial" type="text/x-handlebars-template">
-    <table>
-      <tr>
-        <th class="rank">Rank</th>
-        <th class="colone">{{colOne}}</th>
-        <th class="coltwo">{{colTwo}}</th>
-      </tr>
-      {{#each rows}}
-        <tr>
-          <td>{{rank}}</td>
-          <td>{{name}}</td>
-          <td>{{value}}</td>
-        </tr>
-      {{/each}}
-    </table>
-  </script>
+		<script id="table-partial" type="text/x-handlebars-template">
+			<table>
+				<tr>
+					<th class="rank">Rank</th>
+					<th class="colone">{{colOne}}</th>
+					<th class="coltwo">{{colTwo}}</th>
+				</tr>
+				{{#each rows}}
+				<tr>
+					<td>{{rank}}</td>
+					<td>{{name}}</td>
+					<td>{{value}}</td>
+				</tr>
+				{{/each}}
+			</table>
+		</script>
 
-  <div id="traffic" class="section"></div>
-</div>
+		<input type="range" min=0 max=1 value=0 id="slider"  />
+		<output for="slider" id="logname" ></output>
 
-<div id="footer">
-  <p>Maximum recommended log upload size: 200MB</p>
-  <p>Compatible with Google Chrome &amp; Mozilla FireFox</p>
-  <div >
-      Fork this project on <a href="https://github.com/danielstjules/ServerLogStats">Github</a>
-      or <a href="https://github.com/danielstjules/ServerLogStats/issues">open an issue</a>.
-  </div>
-</div>
+		<div id="uploadbox"></div>
 
-<script id="time-template" type="text/x-handlebars-template">
-  <p>Script Execution Time: {{duration}}s</p>
-</script>
+		<div id="traffic" class="section"></div>
+	</div>
 
-<script type="text/javascript" src="lib/d3.v3.min.js" charset="utf-8"></script>
-<script type="text/javascript" src="lib/zepto.min.js"></script>
-<script type="text/javascript" src="lib/handlebars.min.js" charset="utf-8"></script>
+	<div id="footer">
+		<p>Maximum recommended log upload size: 200MB</p>
+		<p>Compatible with Google Chrome &amp; Mozilla FireFox</p>
+		<div >
+			Fork this project on <a href="https://github.com/danielstjules/ServerLogStats">Github</a>
+			or <a href="https://github.com/danielstjules/ServerLogStats/issues">open an issue</a>.
+		</div>
+	</div>
 
-<script type="text/javascript" src="app/charts.js"></script>
-<script type="text/javascript" src="app/log.js"></script>
-<script type="text/javascript" src="app/main.js"></script>
+	<script id="time-template" type="text/x-handlebars-template">
+		<p>Script Execution Time: {{duration}}s</p>
+	</script>
+
+	<script type="text/javascript" src="lib/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="lib/zepto.min.js"></script>
+	<script type="text/javascript" src="lib/handlebars.min.js" charset="utf-8"></script>
+
+	<script type="text/javascript" src="app/charts.js"></script>
+	<script type="text/javascript" src="app/log.js"></script>
+	<script type="text/javascript" src="app/main.js"></script>
 
 </body>
 </html>

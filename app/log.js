@@ -259,10 +259,10 @@ function Log(logFile) {
         // Increment traffic
         if (!traffic[dateString]) {
           traffic[dateString] = { 'unixTime' : date, 'hits': 1,
-                                  'bandwidth': bytesTransferred };
+                                  'bandwidth': isNaN(bytesTransferred) ? 0: bytesTransferred };
         } else {
           traffic[dateString]['hits']++;
-          traffic[dateString]['bandwidth'] += bytesTransferred;
+          traffic[dateString]['bandwidth'] += isNaN(bytesTransferred) ? 0: bytesTransferred;
         }
       }
     }

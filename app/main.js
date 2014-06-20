@@ -1,3 +1,45 @@
+
+
+
+// Get all avilable log files based on files.json.
+
+var dataDir = "data/";
+var jsonFile = "logs.json";
+var logFilesnames;
+var logs = [];
+var duration = [];
+
+
+$.get( dataDir + jsonFile, function(data){
+	logFilesnames = data.files;
+	logFilesnames.forEach(function(thisFile, index){
+		var tokens = thisFile.name.split('-');
+		thisFile.month = tokens[1];
+		thisFile.year = tokens[2];
+		var startTime = new Date().getTime();
+		$.get( dataDir + thisFile.name, function (data){
+			logs[index] = new Log(data);
+			logs[index].parse();
+			var endTime = new Date().getTime();
+			duration[index] = (endTime - startTime) / 1000;
+			console.log(sliders[0].value, index);
+			if (sliders[0].value == index){
+				setupPage(logs[sliders[0].value], sliders[0].value);
+			}
+		});
+	});
+	var sliders = $("#slider");
+	sliders[0].max = logFilesnames.length-1;
+	sliders.on("input", function(){
+		var choosen = sliders[0].value;
+		$("#logname")[0].value = logFilesnames[choosen].month + "-" + logFilesnames[choosen].year;
+		setupPage(logs[choosen], choosen);
+	});
+	sliders.trigger("input");
+});
+
+
+
 /**
  * Only accepts default Apache/Nginx access log format:
  * http://httpd.apache.org/docs/2.2/logs.html#common
@@ -5,56 +47,6 @@
  * Uses Zepto.js, Handlebars.js, and d3.js
  */
 
- var log;
- var length;
- var name = "data/audio.live.webuild.sg-May-2014";
-
- var xhr = $.ajax({
-  type: "HEAD",
-  url: "data/audio.live.webuild.sg-May-2014",
-  success: function(msg){
-    length = xhr.getResponseHeader('Content-Length');
-    $.get( name, handleFileLoad);
-  }
-});
-
-
- function handleFileLoad(data) {
-  // Log current time
-  var startTime = new Date().getTime();
-
-  // Handlebars template for updating #uploadbox
-  var source = $('#uploaded-template').html();
-  var template = Handlebars.compile(source);
-  var uploadbox = $('#uploadbox');
-
-  // Get the uploaded file
-
-  // Display File Info, replacing previous upload box contents
-  var fileInfo = { 'fileName': escape(name), 'fileSize': length };
-  uploadbox.html(template(fileInfo));
-
-  log = new Log(data);
-
-  // Display error if the log file is invalid, then return and refresh
-  if (!log.isValid()) {
-    fileInfo['fileError'] = true;
-    uploadbox.html(template(fileInfo));
-    setTimeout('location.reload(true);', 4000);
-    return;
-  }
-
-  // Parse the log and update the page
-  log.parse();
-  setupPage();
-
-  // Done - let's show how long that took
-  var endTime = new Date().getTime();
-  var duration = (endTime - startTime) / 1000;
-
-  var timeTemplate = Handlebars.compile($('#time-template').html());
-  $('#footer').html(timeTemplate({ 'duration': duration }));
-}
 
 /**
  * Creates an array of objects from a two dimensional array, for use with
@@ -64,79 +56,96 @@
  * @return  array  An array of objects with properties: rank, name and value
  */
  function formatTableRows(array) {
-  var rows = [];
-  for (i = 0; i < array.length; i++) {
-    var row = array[i];
-    rows.push({ 'rank': i + 1, 'name': row[0], 'value': row[1] });
-  }
+	var rows = [];
+	for (i = 0; i < array.length; i++) {
+		var row = array[i];
+		rows.push({ 'rank': i + 1, 'name': row[0], 'value': row[1] });
+	}
 
-  return rows;
-}
+	return rows;
+ }
 
 /**
  * Adds the generated tables and bar charts to the main page.
  */
- function setupPage() {
-  var div;
-  var tableHtml;
+ function setupPage(log, index) {
 
-  var source = $('#section-template').html();
-  var template = Handlebars.compile(source);
+	$('#traffic').empty();
+	$("#requests").remove();
+	$("#pages").remove();
+	$('#uploadbox').empty();
 
-  // Add the traffic line chart
-  $('#traffic').css('display', 'block');
-  Charts.drawTrafficLineChart('#traffic', log.traffic);
+	if (!log){
+		var source = $('#uploaded-template').html();
+		var template = Handlebars.compile(source);
+		var uploadbox = $('#uploadbox');
+		uploadbox.html(template());
+		return;
+	}
 
-  // Next all the barcharts and tables
-  // Format: div id, table var, second column head, third column head
-  var sectionInfo = [
-  //['hosts',       log.hosts,       'Host',      'Hits'],
-  ['requests',    log.requests,    'Request',   'Hits'],
-  ['pages',       log.pages,       'Page',      'Hits'],
-  //['ref',         log.referrers,   'Referrer',  'Hits'],
-  //['refdomains',  log.refDomains,  'Domain',    'Hits'],
-  //['errors',      log.errors,      'Error',    'Hits']
-  ];
+	var div;
+	var tableHtml;
 
-  // Loop through each barChartInfo element
-  // and display the div, build the bar chart, and the table
-  for (var i = 0; i < sectionInfo.length; i++) {
-    var j;
+	var source = $('#section-template').html();
+	var template = Handlebars.compile(source);
 
-    var section = {
-      'id': sectionInfo[i][0],
-      'sectionName': sectionInfo[i][2] + 's',
-      'colOne': sectionInfo[i][2],
-      'colTwo': sectionInfo[i][3],
-      'rows': formatTableRows(sectionInfo[i][1])
-    };
+	// Add the traffic line chart
+	$('#traffic').css('display', 'block');
+	Charts.drawTrafficLineChart('#traffic', log.traffic);
 
-    var html = template(section);
-    $('#content').append(html);
+	// Next all the barcharts and tables
+	// Format: div id, table var, second column head, third column head
+	var sectionInfo = [
+	//['hosts',       log.hosts,       'Host',      'Hits'],
+	['requests',    log.requests,    'Request',   'Hits'],
+	['pages',       log.pages,       'Page',      'Hits'],
+	//['ref',         log.referrers,   'Referrer',  'Hits'],
+	//['refdomains',  log.refDomains,  'Domain',    'Hits'],
+	//['errors',      log.errors,      'Error',    'Hits']
+	];
 
-    // Get top ten values, add the bar chart
-    divID = '#' + sectionInfo[i][0];
-    var topTen = sectionInfo[i][1].slice(0,10);
-    for (j = 0; j < topTen.length; j++) {
-      topTen[j] = topTen[j][1];
-    }
+	// Loop through each barChartInfo element
+	// and display the div, build the bar chart, and the table
+	for (var i = 0; i < sectionInfo.length; i++) {
+		var j;
 
-    Charts.drawBarChart(divID, topTen);
+		var section = {
+			'id': sectionInfo[i][0],
+			'sectionName': sectionInfo[i][2] + 's',
+			'colOne': sectionInfo[i][2],
+			'colTwo': sectionInfo[i][3],
+			'rows': formatTableRows(sectionInfo[i][1])
+		};
 
-    // Display the section
-    div = $(divID);
-    div.css('display', 'block');
+		var html = template(section);
+		$('#content').append(html);
 
-    // Get list of table rows to add event listeners to
-    var links = div.find('.container')[0]
-    .getElementsByClassName('table')[0]
-    .getElementsByTagName('tr');
+		// Get top ten values, add the bar chart
+		divID = '#' + sectionInfo[i][0];
+		var topTen = sectionInfo[i][1].slice(0,10);
+		for (j = 0; j < topTen.length; j++) {
+			topTen[j] = topTen[j][1];
+		}
 
-    // Add event listeners, but skip the row containing the table head
-    for (j = 1; j < links.length; j++) {
-      $(links[j]).on('click', processOverlay);
-    }
-  }
+		Charts.drawBarChart(divID, topTen);
+
+		// Display the section
+		div = $(divID);
+		div.css('display', 'block');
+
+		// Get list of table rows to add event listeners to
+		var links = div.find('.container')[0]
+		.getElementsByClassName('table')[0]
+		.getElementsByTagName('tr');
+
+		// Add event listeners, but skip the row containing the table head
+		for (j = 1; j < links.length; j++) {
+			$(links[j]).on('click', processOverlay);
+		}
+	}
+
+	var timeTemplate = Handlebars.compile($('#time-template').html());
+	$('#footer').html(timeTemplate({ 'duration': duration[index] }));
 }
 
 /**
@@ -145,66 +154,66 @@
  * @param  evt  The click event that triggered the listener
  */
  function processOverlay(evt) {
-  var query = this.getElementsByTagName('td')[1].innerHTML;
+	var query = this.getElementsByTagName('td')[1].innerHTML;
 
-  // Get section id, ie: <div id="hosts" class="section">
-  var section = $(this).closest('.section').attr('id');
+	// Get section id, ie: <div id="hosts" class="section">
+	var section = $(this).closest('.section').attr('id');
 
-  // Dim the screen and disable the scrollbar
-  var body = $('body');
-  body.css('overflow', 'hidden');
+	// Dim the screen and disable the scrollbar
+	var body = $('body');
+	body.css('overflow', 'hidden');
 
-  var source = $('#modal-template').html();
-  var template = Handlebars.compile(source);
+	var source = $('#modal-template').html();
+	var template = Handlebars.compile(source);
 
-  // For hosts, display userAgent and requests
-  if (section == 'hosts') {
-    // Generate a list of the most common requests by that host
-    var requestsTable = {
-      'colOne': 'Request',
-      'colTwo': 'Hits',
-      'rows': formatTableRows(log.parseRequests(1000, 'host', query)),
-      'query': query,
-      'title': 'Host',
-      'extraTitle': 'User Agent',
-      'extraInfo': log.getUserAgent(query)
-    };
+	// For hosts, display userAgent and requests
+	if (section == 'hosts') {
+		// Generate a list of the most common requests by that host
+		var requestsTable = {
+			'colOne': 'Request',
+			'colTwo': 'Hits',
+			'rows': formatTableRows(log.parseRequests(1000, 'host', query)),
+			'query': query,
+			'title': 'Host',
+			'extraTitle': 'User Agent',
+			'extraInfo': log.getUserAgent(query)
+		};
 
-    // Add modal, then draw line chart
-    body.append(template(requestsTable));
-    Charts.drawLineChart('#modal', log.parseTraffic('host', query));
-  }
+		// Add modal, then draw line chart
+		body.append(template(requestsTable));
+		Charts.drawLineChart('#modal', log.parseTraffic('host', query));
+	}
 
-  // Render data for all other sections. So far, this includes a single line
-  // chart showing requests over time, and a table for requesting hosts
-  else {
-    var sectionInfo = {
-      'requests':   { 'key': 'request',   'htmlTitle': 'Request' },
-      'pages'   :   { 'key': 'page',      'htmlTitle': 'Page' },
-      'ref'     :   { 'key': 'referrer',  'htmlTitle': 'Referrer' },
-      'refdomains': { 'key': 'refDomain', 'htmlTitle': 'Referring Domain' },
-      'errors'   :  { 'key': 'request',   'htmlTitle': 'Error' }
-    };
+	// Render data for all other sections. So far, this includes a single line
+	// chart showing requests over time, and a table for requesting hosts
+	else {
+		var sectionInfo = {
+			'requests':   { 'key': 'request',   'htmlTitle': 'Request' },
+			'pages'   :   { 'key': 'page',      'htmlTitle': 'Page' },
+			'ref'     :   { 'key': 'referrer',  'htmlTitle': 'Referrer' },
+			'refdomains': { 'key': 'refDomain', 'htmlTitle': 'Referring Domain' },
+			'errors'   :  { 'key': 'request',   'htmlTitle': 'Error' }
+		};
 
-    // Generate a list of the most common hosts, with a limit of 1000
-    var column = sectionInfo[section]['key'];
-    var hosts = log.parseHosts(1000, column, query);
-    var hostsTable = {
-      'colOne': 'Host',
-      'colTwo': 'Hits',
-      'rows': formatTableRows(hosts),
-      'query': query,
-      'title': sectionInfo[section]['htmlTitle']
-    };
+		// Generate a list of the most common hosts, with a limit of 1000
+		var column = sectionInfo[section]['key'];
+		var hosts = log.parseHosts(1000, column, query);
+		var hostsTable = {
+			'colOne': 'Host',
+			'colTwo': 'Hits',
+			'rows': formatTableRows(hosts),
+			'query': query,
+			'title': sectionInfo[section]['htmlTitle']
+		};
 
-    // Add modal, then draw line chart
-    body.append(template(hostsTable));
-    Charts.drawLineChart('#modal', log.parseTraffic(column, query));
-  }
+		// Add modal, then draw line chart
+		body.append(template(hostsTable));
+		Charts.drawLineChart('#modal', log.parseTraffic(column, query));
+	}
 
-  $('#close').on('click', removeOverlay);
+	$('#close').on('click', removeOverlay);
 
-  return false;
+	return false;
 }
 
 /**
@@ -214,11 +223,11 @@
  * @param  evt  The click event that triggered the listener
  */
  function removeOverlay(evt) {
-  $('body').css('overflow', 'visible');
-  $('#overlay').remove();
+	$('body').css('overflow', 'visible');
+	$('#overlay').remove();
 
-  return false;
-}
+	return false;
+ }
 
 // Register the table partial
 Handlebars.registerPartial('table', $('#table-partial').html());

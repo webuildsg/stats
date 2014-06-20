@@ -37,7 +37,7 @@ var Charts = function() {
   }
 
   /**
-   * Creates an SVG-based line chart with d3.js and appends it to a div. Generates 
+   * Creates an SVG-based line chart with d3.js and appends it to a div. Generates
    * a single y axis and line.
    *
    * @param  string  The ID of the div to append the SVG
@@ -200,8 +200,8 @@ var Charts = function() {
   }
 
   /**
-   * Creates an SVG-based line chart with d3.js and appends it to a div. Generates 
-   * two y axis, with two lines: one for requests per day, and one for bandwidth 
+   * Creates an SVG-based line chart with d3.js and appends it to a div. Generates
+   * two y axis, with two lines: one for requests per day, and one for bandwidth
    * per day.
    *
    * @param  string  The ID of the div to append the SVG

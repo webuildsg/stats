@@ -105,12 +105,12 @@ h1 {
 .table::-webkit-scrollbar {
     width: 12px;
 }
- 
+
 .table::-webkit-scrollbar-track {
     background-color: #484949;
     -webkit-border-radius: 5px;
 }
- 
+
 .table::-webkit-scrollbar-thumb {
     background-color: #2e3031;
     -webkit-border-radius: 5px;
@@ -156,7 +156,7 @@ tr:hover th {
 }
 
 input {
-    display: none;
+    width: 100%;
     margin-top: 20px;
 }
 
