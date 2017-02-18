@@ -1,0 +1,28 @@
+{
+  "name": "stats",
+  "version": "1.0.0",
+  "description": "webuildsg stats viewer",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "http-server",
+    "build": "./build.sh > data/logs.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webuildsg/stats.git"
+  },
+  "keywords": [
+    "webuildsg",
+    "statistics",
+    "data"
+  ],
+  "author": "Chinmay <notthetup@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/webuildsg/stats/issues"
+  },
+  "homepage": "https://github.com/webuildsg/stats#readme"
+}
