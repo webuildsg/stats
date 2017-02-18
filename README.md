@@ -1,6 +1,8 @@
 ServerLogStats
 ==============
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/webuildsg/stats.svg)](https://greenkeeper.io/)
+
 ServerLogStats is a Web App that uses JavaScript and HTML5's FileApi to process Apache/Nginx server logs.  This allows for log processing from within the browser, on the client-side, and without the logs and visitor information ever touching a server. It then generates charts and tables based on visitor info.
 
 It's been built with the following libraries:
